@@ -1,0 +1,76 @@
+---
+- name: Ensure supported Linux platform
+  ansible.builtin.assert:
+    that:
+      - ansible_system == "Linux"
+      - ansible_distribution in ["Amazon", "Ubuntu", "RedHat", "Rocky", "AlmaLinux", "Debian"]
+    fail_msg: "This role supports Linux EC2 instances only."
+
+- name: Install CloudWatch Agent on Amazon Linux
+  ansible.builtin.dnf:
+    name: amazon-cloudwatch-agent
+    state: present
+  when: ansible_distribution == "Amazon" and ansible_pkg_mgr == "dnf"
+
+- name: Install CloudWatch Agent on Amazon Linux using yum
+  ansible.builtin.yum:
+    name: amazon-cloudwatch-agent
+    state: present
+  when: ansible_distribution == "Amazon" and ansible_pkg_mgr == "yum"
+
+- name: Download CloudWatch Agent package for Ubuntu/Debian
+  ansible.builtin.get_url:
+    url: "{{ cloudwatch_agent_deb_url }}"
+    dest: /tmp/amazon-cloudwatch-agent.deb
+    mode: "0644"
+  when: ansible_os_family == "Debian"
+
+- name: Install CloudWatch Agent package for Ubuntu/Debian
+  ansible.builtin.apt:
+    deb: /tmp/amazon-cloudwatch-agent.deb
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Download CloudWatch Agent RPM for non-Amazon Red Hat family
+  ansible.builtin.get_url:
+    url: "{{ cloudwatch_agent_rpm_url }}"
+    dest: /tmp/amazon-cloudwatch-agent.rpm
+    mode: "0644"
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution != "Amazon"
+
+- name: Install CloudWatch Agent RPM for non-Amazon Red Hat family
+  ansible.builtin.dnf:
+    name: /tmp/amazon-cloudwatch-agent.rpm
+    state: present
+    disable_gpg_check: false
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution != "Amazon"
+    - ansible_pkg_mgr == "dnf"
+
+- name: Install CloudWatch Agent RPM for non-Amazon Red Hat family using yum
+  ansible.builtin.yum:
+    name: /tmp/amazon-cloudwatch-agent.rpm
+    state: present
+    disable_gpg_check: false
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution != "Amazon"
+    - ansible_pkg_mgr == "yum"
+
+- name: Render minimal disk metrics configuration
+  ansible.builtin.template:
+    src: amazon-cloudwatch-agent.json.j2
+    dest: "{{ cloudwatch_agent_config_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Apply CloudWatch Agent configuration
+
+- name: Ensure CloudWatch Agent is enabled and started
+  ansible.builtin.systemd:
+    name: amazon-cloudwatch-agent
+    enabled: true
+    state: started

@@ -1,0 +1,62 @@
+---
+- name: Validate disk monitoring prerequisites
+  hosts: all
+  become: true
+  gather_facts: true
+  serial: 50
+
+  tasks:
+    - name: Check supported operating system
+      ansible.builtin.assert:
+        that:
+          - ansible_facts["system"] == "Linux"
+        fail_msg: "This playbook supports Linux hosts only."
+
+    - name: Check CloudWatch Agent status
+      ansible.builtin.command:
+        argv:
+          - /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
+          - -m
+          - ec2
+          - -a
+          - status
+      register: agent_status
+      changed_when: false
+      failed_when: false
+
+    - name: Find the active agent configuration
+      ansible.builtin.find:
+        paths:
+          - /opt/aws/amazon-cloudwatch-agent/etc
+          - /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.d
+        patterns:
+          - amazon-cloudwatch-agent.json
+          - amazon-cloudwatch-agent.yaml
+          - amazon-cloudwatch-agent.toml
+          - file_*
+          - ssm_*
+        file_type: file
+      register: agent_config_files
+
+    - name: Read CloudWatch Agent status
+      ansible.builtin.set_fact:
+        agent_status_json: "{{ agent_status.stdout | from_json }}"
+      when: agent_status.rc == 0
+
+    - name: Assert CloudWatch Agent service and configuration are healthy
+      ansible.builtin.assert:
+        that:
+          - agent_status_json.status | default('') == "running"
+          - agent_config_files.matched | int > 0
+        fail_msg: >-
+          CloudWatch Agent validation failed: service={{
+          agent_status_json.status | default('unavailable') }}, configured files={{
+          agent_config_files.files | map(attribute='path') | list }}.
+
+    - name: Report enrollment state
+      ansible.builtin.debug:
+        msg:
+          instance: "{{ inventory_hostname }}"
+          cloudwatch_agent_service: "{{ agent_status_json.status | default('unavailable') }}"
+          configured_files: "{{ agent_config_files.files | map(attribute='path') | list }}"
+      changed_when: false

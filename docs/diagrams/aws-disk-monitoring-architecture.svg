@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 940" role="img" aria-labelledby="title desc">
+  <title id="title">AWS multi-account disk monitoring architecture</title>
+  <desc id="desc">Ansible enrolls tagged EC2 instances across AWS accounts through Systems Manager. CloudWatch Agent publishes disk metrics to regional CloudWatch, which shares them with a central monitoring account for dashboards and alarms.</desc>
+  <defs>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#2563eb"/></marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#15803d"/></marker>
+    <marker id="arrow-purple" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#7c3aed"/></marker>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#172033}.title{font-size:30px;font-weight:700}.subtitle{font-size:16px;fill:#526079}.lane-title{font-size:19px;font-weight:700}.node-title{font-size:16px;font-weight:700}.node-copy{font-size:14px;fill:#34445d}.small{font-size:12px;fill:#526079}.label{font-size:13px;font-weight:600}.box{fill:#fff;stroke:#b8c7dc;stroke-width:2}.blue{fill:#eff6ff;stroke:#60a5fa}.green{fill:#f0fdf4;stroke:#4ade80}.purple{fill:#f5f3ff;stroke:#a78bfa}.orange{fill:#fff7ed;stroke:#fb923c}
+    </style>
+  </defs>
+  <rect width="1560" height="940" fill="#f8fafc"/>
+  <text x="48" y="52" class="title">AWS disk monitoring across accounts and Regions</text>
+  <text x="48" y="78" class="subtitle">Secure enrollment and configuration with Ansible + Systems Manager; continuous metrics and alerting with CloudWatch.</text>
+
+  <rect x="36" y="105" width="440" height="770" rx="20" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="496" y="105" width="548" height="770" rx="20" fill="#eff6ff" stroke="#bfdbfe" stroke-width="2"/>
+  <rect x="1064" y="105" width="460" height="770" rx="20" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="2"/>
+  <text x="58" y="140" class="lane-title">Automation and account access</text>
+  <text x="518" y="140" class="lane-title">Workload accounts · per Region</text>
+  <text x="1086" y="140" class="lane-title">Central monitoring account</text>
+
+  <rect x="72" y="174" width="365" height="104" rx="12" class="box"/>
+  <text x="94" y="204" class="node-title">AWS Organizations</text>
+  <text x="94" y="230" class="node-copy">Discover active accounts and enabled Regions</text>
+  <text x="94" y="253" class="node-copy">New accounts onboard through StackSets</text>
+
+  <rect x="72" y="335" width="365" height="126" rx="12" class="blue"/>
+  <text x="94" y="366" class="node-title">Ansible automation runner</text>
+  <text x="94" y="392" class="node-copy">Dynamic EC2 inventory · bounded rollout</text>
+  <text x="94" y="415" class="node-copy">Publish Parameter Store config</text>
+  <text x="94" y="440" class="small">Assumes short-lived, least-privilege account roles</text>
+
+  <rect x="72" y="688" width="365" height="104" rx="12" class="orange"/>
+  <text x="94" y="720" class="node-title">Private encrypted S3 bucket</text>
+  <text x="94" y="746" class="node-copy">Temporary SSM file-transfer staging</text>
+  <text x="94" y="769" class="small">No SSH ingress or long-lived host keys</text>
+
+  <rect x="538" y="174" width="462" height="104" rx="12" class="box"/>
+  <text x="560" y="204" class="node-title">Member account IAM role</text>
+  <text x="560" y="230" class="node-copy">External-ID-protected automation trust</text>
+  <text x="560" y="253" class="node-copy">SSM core + scoped CWAgent metric permissions</text>
+
+  <rect x="538" y="354" width="462" height="116" rx="12" class="blue"/>
+  <text x="560" y="386" class="node-title">Tagged Linux EC2 instances</text>
+  <text x="560" y="412" class="node-copy">DiskMonitoring=enabled · instance profile</text>
+  <text x="560" y="438" class="node-copy">SSM Agent · tagged State Manager enrollment · no SSH</text>
+
+  <rect x="538" y="526" width="462" height="102" rx="12" class="green"/>
+  <text x="560" y="558" class="node-title">CloudWatch Agent</text>
+  <text x="560" y="584" class="node-copy">Reads filesystem usage every 5 minutes</text>
+  <text x="560" y="608" class="small">Publishes disk_used_percent over TLS</text>
+
+  <rect x="538" y="704" width="462" height="96" rx="12" class="green"/>
+  <text x="560" y="737" class="node-title">Regional CloudWatch metrics</text>
+  <text x="560" y="765" class="node-copy">CWAgent namespace · source account and Region</text>
+
+  <rect x="1102" y="222" width="384" height="112" rx="12" class="purple"/>
+  <text x="1124" y="255" class="node-title">CloudWatch OAM</text>
+  <text x="1124" y="281" class="node-copy">Regional sink and source-account links</text>
+  <text x="1124" y="305" class="node-copy">Metrics are shared; they are not copied</text>
+
+  <rect x="1102" y="430" width="384" height="100" rx="12" class="box"/>
+  <text x="1124" y="463" class="node-title">Fleet dashboard</text>
+  <text x="1124" y="489" class="node-copy">Search widgets by account and Region</text>
+  <text x="1124" y="513" class="small">Missing-metric coverage tracked separately</text>
+
+  <rect x="1102" y="590" width="384" height="94" rx="12" class="orange"/>
+  <text x="1124" y="623" class="node-title">CloudWatch alarms</text>
+  <text x="1124" y="651" class="node-copy">Warning and critical utilization thresholds</text>
+
+  <rect x="1102" y="740" width="384" height="76" rx="12" class="box"/>
+  <text x="1124" y="773" class="node-title">SNS notifications</text>
+  <text x="1124" y="798" class="node-copy">Email or incident integration</text>
+
+  <path d="M255 278 V335" fill="none" stroke="#64748b" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <text x="269" y="313" class="small">account inventory</text>
+  <path d="M437 398 H478 V226 H538" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <text x="443" y="383" class="label" fill="#1d4ed8">STS AssumeRole</text>
+  <path d="M437 398 H486 V412 H538" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <text x="443" y="433" class="small">Ansible via SSM</text>
+  <path d="M437 740 H480 V445 H538" fill="none" stroke="#ea580c" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <text x="445" y="675" class="small" transform="rotate(-90 445 675)">SSM file transfer</text>
+  <path d="M769 278 V354" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <text x="783" y="321" class="small">instance profile</text>
+  <path d="M769 470 V526" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <text x="783" y="506" class="small">configure via SSM</text>
+  <path d="M769 628 V704" fill="none" stroke="#15803d" stroke-width="3" marker-end="url(#arrow-green)"/>
+  <path d="M1000 752 H1074 V278 H1102" fill="none" stroke="#7c3aed" stroke-width="3" marker-end="url(#arrow-purple)"/>
+  <text x="1013" y="726" class="label" fill="#6d28d9">cross-account metrics</text>
+  <path d="M1294 334 V430" fill="none" stroke="#7c3aed" stroke-width="3" marker-end="url(#arrow-purple)"/>
+  <path d="M1486 278 H1504 V637 H1486" fill="none" stroke="#ea580c" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <path d="M1294 684 V740" fill="none" stroke="#ea580c" stroke-width="3" marker-end="url(#arrow-blue)"/>
+
+  <text x="48" y="914" class="small">Control plane: discovery, access, and configuration. Data plane: agent metrics, centralized visibility, and alerting.</text>
+</svg>

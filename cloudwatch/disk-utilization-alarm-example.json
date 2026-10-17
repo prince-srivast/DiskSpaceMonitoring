@@ -1,0 +1,18 @@
+{
+  "AlarmName": "disk-used-percent-example",
+  "AlarmDescription": "Example alarm. Replace dimensions with a real CWAgent time series and tune thresholds to the workload.",
+  "Namespace": "CWAgent",
+  "MetricName": "disk_used_percent",
+  "Dimensions": [
+    {"Name": "InstanceId", "Value": "i-REPLACE_ME"},
+    {"Name": "path", "Value": "/"}
+  ],
+  "Statistic": "Average",
+  "Period": 300,
+  "EvaluationPeriods": 3,
+  "DatapointsToAlarm": 2,
+  "Threshold": 80,
+  "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+  "TreatMissingData": "missing",
+  "ActionsEnabled": false
+}

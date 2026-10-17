@@ -1,0 +1,59 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadOnlyDiscovery",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeRegions",
+        "ssm:DescribeInstanceInformation",
+        "ssm:ListAssociations",
+        "ssm:ListComplianceItems"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "PublishAgentConfigurationParameter",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetParameter",
+        "ssm:PutParameter"
+      ],
+      "Resource": "arn:aws:ssm:*:REPLACE_WITH_ACCOUNT_ID:parameter/disk-monitoring/cloudwatch-agent-config"
+    },
+    {
+      "Sid": "ManageSsmCommandsAndSessions",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:SendCommand",
+        "ssm:GetCommandInvocation",
+        "ssm:ListCommandInvocations",
+        "ssm:ListCommands",
+        "ssm:StartSession",
+        "ssm:ResumeSession",
+        "ssm:TerminateSession"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "UsePrivateSsmTransferBucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::REPLACE_WITH_PRIVATE_SSM_TRANSFER_BUCKET/*"
+    },
+    {
+      "Sid": "InspectPrivateSsmTransferBucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": "arn:aws:s3:::REPLACE_WITH_PRIVATE_SSM_TRANSFER_BUCKET"
+    }
+  ]
+}

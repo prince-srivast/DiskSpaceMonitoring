@@ -1,0 +1,23 @@
+plugin: amazon.aws.aws_ec2
+use_deprecated_tags: false
+regions:
+  - __AWS_REGION__
+filters:
+  instance-state-name: running
+  tag:DiskMonitoring: enabled
+keyed_groups:
+  - key: ec2_tags.Environment
+    prefix: env
+  - key: ec2_tags.Application
+    prefix: app
+hostnames:
+  - instance-id
+compose:
+  ansible_host: instance_id
+  ansible_connection: "'amazon.aws.aws_ssm'"
+  ansible_aws_ssm_region: "'__AWS_REGION__'"
+  ansible_aws_ssm_bucket_name: "'REPLACE_WITH_PRIVATE_SSM_TRANSFER_BUCKET'"
+  ansible_aws_ssm_s3_addressing_style: "'virtual'"
+  ansible_aws_ssm_timeout: 120
+strict: false
+# Use credentials for one target account and Region. Do not store credentials here.

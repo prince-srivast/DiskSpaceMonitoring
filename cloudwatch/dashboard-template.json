@@ -1,0 +1,37 @@
+{
+  "widgets": [
+    {
+      "type": "text",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 2,
+      "properties": {
+        "markdown": "# Fleet Disk Health\nCloudWatch Agent publishes disk metrics in the CWAgent namespace. Each metric widget searches one linked source account and Region. Missing metrics are a coverage issue, not a healthy state."
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 2,
+      "width": 24,
+      "height": 8,
+      "properties": {
+        "view": "timeSeries",
+        "region": "us-east-1",
+        "accountId": "REPLACE_WITH_LINKED_SOURCE_ACCOUNT_ID",
+        "title": "Disk utilization — replace source account and Region",
+        "period": 300,
+        "stat": "Average",
+        "metrics": [
+          [
+            {
+              "expression": "SEARCH('{CWAgent,InstanceId,path} MetricName=\"disk_used_percent\"', 'Average', 300)",
+              "id": "e1"
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DiscoverOrganizationAccounts",
+      "Effect": "Allow",
+      "Action": "organizations:ListAccounts",
+      "Resource": "*"
+    },
+    {
+      "Sid": "AssumeOnlyDiskMonitoringRoles",
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "arn:aws:iam::*:role/DiskMonitoringAutomationRole"
+    }
+  ]
+}

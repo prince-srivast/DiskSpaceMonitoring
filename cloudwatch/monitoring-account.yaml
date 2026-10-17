@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Central OAM sink and SNS alert topic.
+
+Parameters:
+  OrganizationId:
+    Type: String
+    AllowedPattern: "^o-[a-z0-9]{10,32}$"
+    Description: AWS Organizations ID permitted to create source-account links.
+  NotificationEmail:
+    Type: String
+    AllowedPattern: "^[^@]+@[^@]+\\.[^@]+$"
+    ConstraintDescription: Enter a valid email address for disk alerts.
+    Description: Email for disk alerts. Confirm the subscription after deployment.
+
+Resources:
+  ObservabilitySink:
+    Type: AWS::Oam::Sink
+    Properties:
+      Name: disk-monitoring-central
+      Policy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowOrganizationAccountsToLinkMetrics
+            Effect: Allow
+            Principal: "*"
+            Action:
+              - oam:CreateLink
+              - oam:UpdateLink
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:PrincipalOrgID: !Ref OrganizationId
+      Tags:
+        ManagedBy: CloudFormation
+        Purpose: disk-monitoring
+
+  DiskMonitoringAlerts:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: disk-monitoring-alerts
+      DisplayName: Disk monitoring alerts
+
+  EmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
+      TopicArn: !Ref DiskMonitoringAlerts
+
+Outputs:
+  ObservabilitySinkArn:
+    Description: Sink ARN for source-account links in this Region.
+    Value: !GetAtt ObservabilitySink.Arn
+  AlertTopicArn:
+    Description: SNS topic ARN for CloudWatch alarms.
+    Value: !Ref DiskMonitoringAlerts

@@ -1,0 +1,18 @@
+---
+- name: Configure CloudWatch Agent disk metrics on enrolled EC2 instances
+  hosts: all
+  become: true
+  gather_facts: true
+  serial: 25
+  any_errors_fatal: false
+
+  roles:
+    - cloudwatch_disk_agent
+
+  post_tasks:
+    - name: Verify CloudWatch Agent service is active
+      ansible.builtin.command: systemctl is-active amazon-cloudwatch-agent
+      register: cwagent_service
+      changed_when: false
+      failed_when: cwagent_service.rc != 0
+      when: ansible_system == "Linux"

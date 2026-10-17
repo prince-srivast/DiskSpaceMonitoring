@@ -1,0 +1,17 @@
+---
+- name: Publish the Ansible-rendered CloudWatch Agent configuration to Parameter Store
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../inventory/group_vars/all.yml
+
+  tasks:
+    - name: Create or update the per-account and per-Region agent configuration
+      community.aws.ssm_parameter:
+        name: /disk-monitoring/cloudwatch-agent-config
+        description: CloudWatch Agent disk metrics config.
+        value: "{{ lookup('ansible.builtin.template', playbook_dir ~ '/../roles/cloudwatch_disk_agent/templates/amazon-cloudwatch-agent.json.j2') }}"
+        string_type: String
+        overwrite_value: changed
+        region: "{{ lookup('ansible.builtin.env', 'AWS_REGION') | default('us-east-1', true) }}"

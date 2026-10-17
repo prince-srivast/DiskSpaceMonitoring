@@ -1,0 +1,22 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublishDiskMetrics",
+      "Effect": "Allow",
+      "Action": "cloudwatch:PutMetricData",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "cloudwatch:namespace": "CWAgent"
+        }
+      }
+    },
+    {
+      "Sid": "ReadApprovedAgentConfiguration",
+      "Effect": "Allow",
+      "Action": "ssm:GetParameter",
+      "Resource": "arn:aws:ssm:REPLACE_WITH_REGION:REPLACE_WITH_ACCOUNT_ID:parameter/disk-monitoring/cloudwatch-agent-config"
+    }
+  ]
+}

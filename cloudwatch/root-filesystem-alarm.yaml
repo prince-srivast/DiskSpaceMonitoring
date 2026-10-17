@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Warning and critical alarms for one EC2 filesystem.
+
+Parameters:
+  SourceAccountId:
+    Type: String
+    AllowedPattern: "^[0-9]{12}$"
+  InstanceId:
+    Type: String
+    AllowedPattern: "^i-[0-9a-f]+$"
+  AlertTopicArn:
+    Type: String
+    AllowedPattern: "^arn:[^:]+:sns:[a-z0-9-]+:[0-9]{12}:[A-Za-z0-9_-]+$"
+  WarningThreshold:
+    Type: Number
+    Default: 80
+    MinValue: 1
+    MaxValue: 100
+    Description: Warning threshold percentage.
+  CriticalThreshold:
+    Type: Number
+    Default: 90
+    MinValue: 1
+    MaxValue: 100
+    Description: Critical threshold percentage.
+  FilesystemPath:
+    Type: String
+    Default: "/"
+    Description: Mount path reported by the CloudWatch Agent.
+
+Resources:
+  FilesystemDiskWarning:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-warning"
+      AlarmDescription: !Sub "${FilesystemPath} usage is high on ${InstanceId} (${SourceAccountId})."
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 2
+      Threshold: !Ref WarningThreshold
+      TreatMissingData: missing
+      AlarmActions:
+        - !Ref AlertTopicArn
+      Metrics:
+        - Id: disk_used
+          AccountId: !Ref SourceAccountId
+          ReturnData: true
+          MetricStat:
+            Metric:
+              Namespace: CWAgent
+              MetricName: disk_used_percent
+              Dimensions:
+                - Name: InstanceId
+                  Value: !Ref InstanceId
+                - Name: path
+                  Value: !Ref FilesystemPath
+            Period: 300
+            Stat: Average
+
+  FilesystemDiskCritical:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-critical"
+      AlarmDescription: !Sub "${FilesystemPath} usage is critical on ${InstanceId} (${SourceAccountId})."
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 2
+      Threshold: !Ref CriticalThreshold
+      TreatMissingData: missing
+      AlarmActions:
+        - !Ref AlertTopicArn
+      Metrics:
+        - Id: disk_used
+          AccountId: !Ref SourceAccountId
+          ReturnData: true
+          MetricStat:
+            Metric:
+              Namespace: CWAgent
+              MetricName: disk_used_percent
+              Dimensions:
+                - Name: InstanceId
+                  Value: !Ref InstanceId
+                - Name: path
+                  Value: !Ref FilesystemPath
+            Period: 300
+            Stat: Average

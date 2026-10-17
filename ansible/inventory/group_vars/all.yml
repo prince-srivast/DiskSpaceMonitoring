@@ -1,0 +1,2 @@
+cloudwatch_agent_config_path: /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+disk_metrics_interval: 300

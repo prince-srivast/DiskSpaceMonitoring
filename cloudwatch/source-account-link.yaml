@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Link this account and Region to the central OAM sink.
+
+Parameters:
+  SinkArn:
+    Type: String
+    AllowedPattern: "^arn:[^:]+:oam:[a-z0-9-]+:[0-9]{12}:sink:[A-Za-z0-9-]+$"
+    Description: Sink ARN from the monitoring-account stack in this Region.
+
+Resources:
+  DiskMetricsObservabilityLink:
+    Type: AWS::Oam::Link
+    Properties:
+      SinkIdentifier: !Ref SinkArn
+      LabelTemplate: "$AccountName"
+      ResourceTypes:
+        - AWS::CloudWatch::Metric
+      Tags:
+        ManagedBy: CloudFormation
+        Purpose: disk-monitoring
+
+Outputs:
+  ObservabilityLinkArn:
+    Value: !Ref DiskMetricsObservabilityLink

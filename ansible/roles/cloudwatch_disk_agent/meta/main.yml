@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  role_name: cloudwatch_disk_agent
+  description: Configure CloudWatch Agent disk metrics on Linux EC2.
+  license: MIT
+  min_ansible_version: "2.17"
+  platforms:
+    - name: Amazon
+      versions: ["all"]
+    - name: Ubuntu
+      versions: ["all"]
+    - name: Debian
+      versions: ["all"]
+    - name: EL
+      versions: ["all"]
+dependencies: []

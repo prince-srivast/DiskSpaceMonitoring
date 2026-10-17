@@ -1,0 +1,31 @@
+{
+  "agent": {
+    "metrics_collection_interval": {{ disk_metrics_interval | int }},
+    "run_as_user": "root"
+  },
+  "metrics": {
+    "namespace": "CWAgent",
+    "append_dimensions": {
+      "InstanceId": "${aws:InstanceId}",
+      "InstanceType": "${aws:InstanceType}",
+      "ImageId": "${aws:ImageId}"
+    },
+    "aggregation_dimensions": [
+      ["InstanceId", "path"]
+    ],
+    "metrics_collected": {
+      "disk": {
+        "measurement": [
+          "used_percent"
+        ],
+        "metrics_collection_interval": {{ disk_metrics_interval | int }},
+        "resources": ["*"],
+        "drop_device": true,
+        "ignore_file_system_types": [
+          "sysfs", "devtmpfs", "tmpfs", "overlay", "squashfs",
+          "proc", "smbfs", "cgroup", "cgroup2", "tracefs", "nsfs"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Install and configure the CloudWatch Agent on tagged Linux EC2 instances.
+
+Resources:
+  DiskMonitoringAgentDocument:
+    Type: AWS::SSM::Document
+    Properties:
+      Name: DiskMonitoring-InstallAndConfigureCloudWatchAgent
+      DocumentType: Command
+      DocumentFormat: YAML
+      Content:
+        schemaVersion: "2.2"
+        description: Install the agent and load its Parameter Store config.
+        mainSteps:
+          - action: aws:configurePackage
+            name: installCloudWatchAgent
+            precondition:
+              StringEquals:
+                - platformType
+                - Linux
+            inputs:
+              name: AmazonCloudWatchAgent
+              action: Install
+          - action: aws:runShellScript
+            name: configureCloudWatchAgent
+            precondition:
+              StringEquals:
+                - platformType
+                - Linux
+            inputs:
+              runCommand:
+                - >-
+                  /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
+                  -a fetch-config -m ec2 -s
+                  -c ssm:/disk-monitoring/cloudwatch-agent-config
+
+  DiskMonitoringAgentAssociation:
+    Type: AWS::SSM::Association
+    Properties:
+      AssociationName: disk-monitoring-auto-enrollment
+      Name: !Ref DiskMonitoringAgentDocument
+      Targets:
+        - Key: tag:DiskMonitoring
+          Values:
+            - enabled
+      MaxConcurrency: "10%"
+      MaxErrors: "1"
+      ComplianceSeverity: HIGH
+      SyncCompliance: AUTO
+
+Outputs:
+  AssociationId:
+    Description: Association for tagged managed nodes.
+    Value: !Ref DiskMonitoringAgentAssociation
+  SsmDocumentName:
+    Description: SSM document used by the association.
+    Value: !Ref DiskMonitoringAgentDocument
